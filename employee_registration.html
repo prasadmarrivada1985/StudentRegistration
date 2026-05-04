@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Employee Registration</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container { max-width: 720px; margin: auto; }
+
+  h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #444;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    background: #fff;
+    color: #1a1a1a;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+
+  .error { font-size: 12px; color: #dc2626; min-height: 16px; }
+
+  .actions { display: flex; gap: 10px; margin-top: 1.25rem; }
+
+  .btn-primary {
+    background: #4f46e5;
+    color: #fff;
+    border: none;
+    padding: 9px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #4338ca; }
+
+  .btn-secondary {
+    background: #fff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    padding: 9px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-secondary:hover { background: #f9fafb; }
+
+  /* Table */
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .table-header h2 { font-size: 18px; font-weight: 600; }
+
+  .badge {
+    font-size: 12px;
+    background: #eef2ff;
+    color: #4f46e5;
+    border: 1px solid #c7d2fe;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  .table-wrap { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 560px;
+  }
+
+  thead tr { background: #f9fafb; }
+
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    color: #6b7280;
+    font-weight: 500;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+
+  .avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 8px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  .name-cell { display: flex; align-items: center; }
+
+  .dept-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 12px;
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+  }
+
+  .action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 7px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #9ca3af;
+    transition: background 0.15s, color 0.15s;
+  }
+  .action-btn:hover { background: #f3f4f6; color: #374151; }
+  .action-btn.del:hover { background: #fee2e2; color: #dc2626; }
+
+  .empty {
+    text-align: center;
+    padding: 2.5rem;
+    color: #9ca3af;
+    font-size: 14px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: #1a1a1a;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 560px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .field.full { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Employee Registration</h1>
+  <p class="subtitle">Add employees to the database using the form below.</p>
+
+  <!-- Form Card -->
+  <div class="card">
+    <div class="form-grid">
+
+      <div class="field full">
+        <label for="name">Full name</label>
+        <input type="text" id="name" placeholder="e.g. Ravi Kumar" />
+        <div class="error" id="err-name"></div>
+      </div>
+
+      <div class="field">
+        <label for="email">Email address</label>
+        <input type="email" id="email" placeholder="ravi@company.com" />
+        <div class="error" id="err-email"></div>
+      </div>
+
+      <div class="field">
+        <label for="phone">Phone number</label>
+        <input type="tel" id="phone" placeholder="+91 98765 43210" />
+        <div class="error" id="err-phone"></div>
+      </div>
+
+      <div class="field">
+        <label for="dept">Department</label>
+        <select id="dept">
+          <option value="">Select department</option>
+          <option>Engineering</option>
+          <option>Marketing</option>
+          <option>Sales</option>
+          <option>Human Resources</option>
+          <option>Finance</option>
+          <option>Operations</option>
+          <option>Design</option>
+          <option>Customer Support</option>
+        </select>
+        <div class="error" id="err-dept"></div>
+      </div>
+
+      <div class="field">
+        <label for="role">Role / Job title</label>
+        <input type="text" id="role" placeholder="e.g. Software Engineer" />
+        <div class="error" id="err-role"></div>
+      </div>
+
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" id="submit-btn" onclick="saveEmployee()">Save employee</button>
+      <button class="btn-secondary" onclick="clearForm()">Clear</button>
+    </div>
+  </div>
+
+  <!-- Records Table -->
+  <div class="card">
+    <div class="table-header">
+      <h2>Employee records</h2>
+      <span class="badge" id="count-badge">0 employees</span>
+    </div>
+    <div class="table-wrap">
+      <div id="table-container">
+        <div class="empty">No employees added yet.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // In-memory database (replace with backend API / localStorage as needed)
+  let employees = JSON.parse(localStorage.getItem('employees') || '[]');
+  let editId = null;
+
+  function persist() {
+    localStorage.setItem('employees', JSON.stringify(employees));
+  }
+
+  function validate() {
+    let valid = true;
+    const rules = [
+      { id: 'name',  msg: 'Full name is required.' },
+      { id: 'email', msg: 'A valid email address is required.', regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
+      { id: 'phone', msg: 'Phone number is required.' },
+      { id: 'dept',  msg: 'Please select a department.' },
+      { id: 'role',  msg: 'Role / job title is required.' }
+    ];
+    rules.forEach(r => {
+      const el = document.getElementById(r.id);
+      const errEl = document.getElementById('err-' + r.id);
+      const val = el.value.trim();
+      let msg = '';
+      if (!val) msg = r.msg;
+      else if (r.regex && !r.regex.test(val)) msg = r.msg;
+      errEl.textContent = msg;
+      if (msg) valid = false;
+    });
+    return valid;
+  }
+
+  function saveEmployee() {
+    if (!validate()) return;
+
+    const emp = {
+      id:    editId || Date.now(),
+      name:  document.getElementById('name').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      dept:  document.getElementById('dept').value,
+      role:  document.getElementById('role').value.trim()
+    };
+
+    if (editId) {
+      const idx = employees.findIndex(e => e.id === editId);
+      if (idx !== -1) employees[idx] = emp;
+      showToast('Employee updated successfully.');
+    } else {
+      employees.push(emp);
+      showToast('Employee saved successfully.');
+    }
+
+    persist();
+    renderTable();
+    clearForm();
+  }
+
+  function deleteEmployee(id) {
+    if (!confirm('Delete this employee record?')) return;
+    employees = employees.filter(e => e.id !== id);
+    persist();
+    renderTable();
+    showToast('Employee deleted.');
+  }
+
+  function editEmployee(id) {
+    const emp = employees.find(e => e.id === id);
+    if (!emp) return;
+    document.getElementById('name').value  = emp.name;
+    document.getElementById('email').value = emp.email;
+    document.getElementById('phone').value = emp.phone;
+    document.getElementById('dept').value  = emp.dept;
+    document.getElementById('role').value  = emp.role;
+    editId = id;
+    document.getElementById('submit-btn').textContent = 'Update employee';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('name').focus();
+  }
+
+  function clearForm() {
+    ['name','email','phone','role'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('dept').value = '';
+    ['name','email','phone','dept','role'].forEach(f => document.getElementById('err-' + f).textContent = '');
+    editId = null;
+    document.getElementById('submit-btn').textContent = 'Save employee';
+  }
+
+  function initials(name) {
+    return name.split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+  }
+
+  function renderTable() {
+    const badge = document.getElementById('count-badge');
+    const count = employees.length;
+    badge.textContent = count + (count === 1 ? ' employee' : ' employees');
+
+    const container = document.getElementById('table-container');
+    if (count === 0) {
+      container.innerHTML = '<div class="empty">No employees added yet.</div>';
+      return;
+    }
+
+    const rows = employees.map(e => `
+      <tr>
+        <td>
+          <div class="name-cell">
+            <span class="avatar">${initials(e.name)}</span>
+            <span>${e.name}</span>
+          </div>
+        </td>
+        <td>${e.email}</td>
+        <td>${e.phone}</td>
+        <td><span class="dept-tag">${e.dept}</span></td>
+        <td>${e.role}</td>
+        <td style="text-align:right; white-space:nowrap;">
+          <button class="action-btn" title="Edit" onclick="editEmployee(${e.id})">✎</button>
+          <button class="action-btn del" title="Delete" onclick="deleteEmployee(${e.id})">✕</button>
+        </td>
+      </tr>
+    `).join('');
+
+    container.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Department</th>
+            <th>Role</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // Initial render
+  renderTable();
+</script>
+
+</body>
+</html>
